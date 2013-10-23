@@ -125,7 +125,7 @@ def  make_file_list( args = None ):
         file_list = None
     else:
         # now filter the file list to remove non-existing ones
-        file_list = filter( file_exists, file_list )
+        file_list = list(filter( file_exists, file_list ))
 
     return file_list
 

@@ -63,22 +63,22 @@ error = "sstruct.error"
 def pack(format, object):
         formatstring, names, fixes = getformat(format)
         elements = []
-        if type(object) is not types.DictType:
+        if type(object) is not dict:
                 object = object.__dict__
         for name in names:
                 value = object[name]
-                if fixes.has_key(name):
+                if name in fixes:
                         # fixed point conversion
                         value = int(round(value*fixes[name]))
                 elements.append(value)
-        data = apply(struct.pack, (formatstring,) + tuple(elements))
+        data = struct.pack(*(formatstring,) + tuple(elements))
         return data
 
 def unpack(format, data, object=None):
         if object is None:
                 object = {}
         formatstring, names, fixes = getformat(format)
-        if type(object) is types.DictType:
+        if type(object) is dict:
                 dict = object
         else:
                 dict = object.__dict__
@@ -86,7 +86,7 @@ def unpack(format, data, object=None):
         for i in range(len(names)):
                 name = names[i]
                 value = elements[i]
-                if fixes.has_key(name):
+                if name in fixes:
                         # fixed point conversion
                         value = value / fixes[name]
                 dict[name] = value
@@ -139,12 +139,12 @@ def getformat(format):
                         m = _extraRE.match(line)
                         if m:
                                 formatchar = m.group(1)
-                                if formatchar <> 'x' and formatstring:
-                                        raise error, "a special format char must be first"
+                                if formatchar != 'x' and formatstring:
+                                        raise error("a special format char must be first")
                         else:
                                 m = _elementRE.match(line)
                                 if not m:
-                                        raise error, "syntax error in format: '%s'" % line
+                                        raise error("syntax error in format: '%s'" % line)
                                 name = m.group(1)
                                 names.append(name)
                                 formatchar = m.group(2)
@@ -154,7 +154,7 @@ def getformat(format):
                                         after = int(m.group(4))
                                         bits = before + after
                                         if bits not in [8, 16, 32]:
-                                                raise error, "fixed point must be 8, 16 or 32 bits long"
+                                                raise error("fixed point must be 8, 16 or 32 bits long")
                                         formatchar = _fixedpointmappings[bits]
                                         assert m.group(5) == "F"
                                         fixes[name] = float(1 << after)
@@ -177,7 +177,7 @@ def _test():
                 afixed: 16.16F
         """
 
-        print 'size:', calcsize(format)
+        print('size:', calcsize(format))
 
         class foo:
                 pass
@@ -194,11 +194,11 @@ def _test():
         i.afixed = 1.5
 
         data = pack(format, i)
-        print 'data:', `data`
-        print unpack(format, data)
+        print('data:', repr(data))
+        print(unpack(format, data))
         i2 = foo()
         unpack(format, data, i2)
-        print vars(i2)
+        print(vars(i2))
 
 if __name__ == "__main__":
         _test()

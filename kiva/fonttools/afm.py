@@ -108,10 +108,10 @@ def _parse_header(fh):
         #key, val = line.split(' ', 1)
         try: d[key] = headerConverters[key](val)
         except ValueError:
-            print >>sys.stderr, 'Value error parsing header in AFM:', key, val
+            print('Value error parsing header in AFM:', key, val, file=sys.stderr)
             continue
         except KeyError:
-            print >>sys.stderr, 'Key error converting in AFM'
+            print('Key error converting in AFM', file=sys.stderr)
             continue
         if key=='StartCharMetrics': return d
     raise RuntimeError('Bad parse')
@@ -233,7 +233,7 @@ def _parse_optional(fh):
         if len(line)==0: continue
         key = line.split()[0]
 
-        if optional.has_key(key): d[key] = optional[key](fh)
+        if key in optional: d[key] = optional[key](fh)
 
     l = ( d['StartKernData'], d['StartComposites'] )
     return l

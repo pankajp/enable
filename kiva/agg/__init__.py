@@ -24,7 +24,7 @@ try:
                      pix_format=default_pix_format,
                      interpolation="nearest",
                      bottom_up=1):
-            assert type(size) is type(()),`size`
+            assert type(size) is type(()),repr(size)
             width,height = size
             pixel_map = PixelMap(width,height,
                                  pix_format_string_map[pix_format],
@@ -35,7 +35,7 @@ try:
                                           bottom_up)
             self.pixel_map = pixel_map
 
-except ImportError, ex:
+except ImportError as ex:
     # warn to stderr containing the exception. The warning should
     # be an ImportWarning, but that is python 2.5+ specific
     import warnings

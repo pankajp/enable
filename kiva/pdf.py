@@ -18,7 +18,7 @@
     The PDF implementation relies heavily on the ReportLab project.
 """
 # standard library imports
-from itertools import izip
+
 import warnings
 import copy
 from numpy import array, pi
@@ -29,11 +29,11 @@ import reportlab.pdfbase._fontdata
 from reportlab.pdfgen import canvas
 
 # local, relative Kiva imports
-from arc_conversion import arc_to_tangent_points
-import basecore2d
-import constants
-from constants import FILL, STROKE, EOF_FILL
-import affine
+from .arc_conversion import arc_to_tangent_points
+from . import basecore2d
+from . import constants
+from .constants import FILL, STROKE, EOF_FILL
+from . import affine
 
 
 cap_style = {}
@@ -64,7 +64,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
     Simple wrapper around a PDF graphics context.
     """
     def __init__(self, pdf_canvas, *args, **kwargs):
-        from image import GraphicsContext as GraphicsContextImage
+        from .image import GraphicsContext as GraphicsContextImage
         self.gc = pdf_canvas
         self.current_pdf_path = None
         self.current_point = (0, 0)
@@ -142,7 +142,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """ Sets/Unsets anti-aliasing for bitmap graphics context.
         """
         msg = "antialias is not part of the PDF canvas.  Should it be?"
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def set_line_width(self, width):
         """ Sets the line width for drawing
@@ -165,7 +165,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
             sjoin = join_style[style]
         except KeyError:
             msg = "Invalid line join style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
         self.gc.setLineJoin(sjoin)
 
     def set_miter_limit(self, limit):
@@ -197,7 +197,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
             scap = cap_style[style]
         except KeyError:
             msg = "Invalid line cap style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
         self.gc.setLineCap(scap)
 
     def set_line_dash(self, lengths, phase=0):
@@ -330,7 +330,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         if self.current_pdf_path is None:
             self.begin_path()
 
-        for start, end in izip(starts, ends):
+        for start, end in zip(starts, ends):
             self.current_pdf_path.moveTo(start[0], start[1])
             self.current_pdf_path.lineTo(end[0], end[1])
             self.current_point = (end[0], end[1])
@@ -385,7 +385,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """
         """
         msg = "quad curve to not implemented yet on PDF"
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def arc(self, x, y, radius, start_angle, end_angle, clockwise=False):
         """
@@ -423,7 +423,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """ Tests to see whether the current drawing path is empty
         """
         msg = "is_path_empty not implemented yet on PDF"
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def get_path_current_point(self):
         """ Returns the current point from the graphics context.
@@ -438,7 +438,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
             Should return a tuple or array instead of a strange object.
         """
         msg = "get_path_bounding_box not implemented yet on PDF"
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     #----------------------------------------------------------------
     # Clipping path manipulation
@@ -469,7 +469,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """
         """
         msg = "clip_to_rects not implemented yet on PDF."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def clear_clip_path(self):
         """
@@ -721,7 +721,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """
         """
         msg = "show_glyphs not implemented on PDF yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
 
     def get_full_text_extent(self, textstring):
@@ -784,7 +784,7 @@ class GraphicsContext(basecore2d.GraphicsContextBase):
         """
         """
         msg = "stroke_rect_with_width not implemented on PDF yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def fill_rect(self,rect):
         """

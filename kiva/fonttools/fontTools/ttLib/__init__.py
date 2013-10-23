@@ -100,7 +100,7 @@ class TTFont:
                 to parse/compile large fonts.
                 """
 
-                import sfnt
+                from . import sfnt
                 self.verbose = verbose
                 self.recalcBBoxes = recalcBBoxes
                 self.tables = {}
@@ -108,10 +108,10 @@ class TTFont:
                 if not file:
                         self.sfntVersion = sfntVersion
                         return
-                if isinstance(file, basestring):
+                if isinstance(file, str):
                         if os.name == "mac" and res_name_or_index is not None:
                                 # on the mac, we deal with sfnt resources as well as flat files
-                                import macUtils
+                                from . import macUtils
                                 if res_name_or_index == 0:
                                         if macUtils.getSFNTResIndices(file):
                                                 # get the first available sfnt font.
@@ -141,10 +141,10 @@ class TTFont:
                 file will we made instead of a flat .ttf file.
                 """
                 from kiva.fonttools.fontTools.ttLib import sfnt
-                if isinstance(file, basestring):
+                if isinstance(file, str):
                         closeStream = 1
                         if os.name == "mac" and makeSuitcase:
-                                import macUtils
+                                from . import macUtils
                                 file = macUtils.SFNTResourceWriter(file, self)
                         else:
                                 file = open(file, "wb")
@@ -156,7 +156,7 @@ class TTFont:
                         # assume "file" is a writable file object
                         closeStream = 0
 
-                tags = self.keys()
+                tags = list(self.keys())
                 tags.remove("GlyphOrder")
                 numTables = len(tags)
                 writer = sfnt.SFNTWriter(file, numTables, self.sfntVersion)
@@ -181,7 +181,7 @@ class TTFont:
 
                 self.disassembleInstructions = disassembleInstructions
                 if not tables:
-                        tables = self.keys()
+                        tables = list(self.keys())
                         if skipTables:
                                 for tag in skipTables:
                                         if tag in tables:
@@ -195,7 +195,7 @@ class TTFont:
                         idlefunc = None
 
                 writer = xmlWriter.XMLWriter(fileOrPath, idlefunc=idlefunc)
-                writer.begintag("ttFont", sfntVersion=`self.sfntVersion`[1:-1],
+                writer.begintag("ttFont", sfntVersion=repr(self.sfntVersion)[1:-1],
                                 ttLibVersion=version)
                 writer.newline()
 
@@ -234,7 +234,7 @@ class TTFont:
                         debugmsg("Done dumping TTX")
 
         def _tableToXML(self, writer, tag, progress):
-                if self.has_key(tag):
+                if tag in self:
                         table = self[tag]
                         report = "Dumping '%s' table..." % tag
                 else:
@@ -244,8 +244,8 @@ class TTFont:
                 elif self.verbose:
                         debugmsg(report)
                 else:
-                        print report
-                if not self.has_key(tag):
+                        print(report)
+                if tag not in self:
                         return
                 xmlTag = tagToXML(tag)
                 if hasattr(table, "ERROR"):
@@ -265,7 +265,7 @@ class TTFont:
                 """Import a TTX file (an XML-based text format), so as to recreate
                 a font object.
                 """
-                if self.has_key("maxp") and self.has_key("post"):
+                if "maxp" in self and "post" in self:
                         # Make sure the glyph order is loaded, as it otherwise gets
                         # lost if the XML doesn't contain the glyph order, yet does
                         # contain the table which was originally used to extract the
@@ -277,12 +277,12 @@ class TTFont:
         def isLoaded(self, tag):
                 """Return true if the table identified by 'tag' has been
                 decompiled and loaded into memory."""
-                return self.tables.has_key(tag)
+                return tag in self.tables
 
         def has_key(self, tag):
                 if self.isLoaded(tag):
                         return 1
-                elif self.reader and self.reader.has_key(tag):
+                elif self.reader and tag in self.reader:
                         return 1
                 elif tag == "GlyphOrder":
                         return 1
@@ -290,9 +290,9 @@ class TTFont:
                         return 0
 
         def keys(self):
-                keys = self.tables.keys()
+                keys = list(self.tables.keys())
                 if self.reader:
-                        for key in self.reader.keys():
+                        for key in list(self.reader.keys()):
                                 if key not in keys:
                                         keys.append(key)
                 keys.sort()
@@ -301,7 +301,7 @@ class TTFont:
                 return ["GlyphOrder"] + keys
 
         def __len__(self):
-                return len(self.keys())
+                return len(list(self.keys()))
 
         def __getitem__(self, tag):
                 try:
@@ -324,10 +324,10 @@ class TTFont:
                                 try:
                                         table.decompile(data, self)
                                 except "_ _ F O O _ _": # dummy exception to disable exception catching
-                                        print "An exception occurred during the decompilation of the '%s' table" % tag
-                                        from tables.DefaultTable import DefaultTable
-                                        import StringIO
-                                        file = StringIO.StringIO()
+                                        print("An exception occurred during the decompilation of the '%s' table" % tag)
+                                        from .tables.DefaultTable import DefaultTable
+                                        import io
+                                        file = io.StringIO()
                                         traceback.print_exc(file=file)
                                         table = DefaultTable(tag)
                                         table.ERROR = file.getvalue()
@@ -335,17 +335,17 @@ class TTFont:
                                         table.decompile(data, self)
                                 return table
                         else:
-                                raise KeyError, "'%s' table not found" % tag
+                                raise KeyError("'%s' table not found" % tag)
 
         def __setitem__(self, tag, table):
                 self.tables[tag] = table
 
         def __delitem__(self, tag):
-                if not self.has_key(tag):
-                        raise KeyError, "'%s' table not found" % tag
-                if self.tables.has_key(tag):
+                if tag not in self:
+                        raise KeyError("'%s' table not found" % tag)
+                if tag in self.tables:
                         del self.tables[tag]
-                if self.reader and self.reader.has_key(tag):
+                if self.reader and tag in self.reader:
                         del self.reader[tag]
 
         def setGlyphOrder(self, glyphOrder):
@@ -356,14 +356,14 @@ class TTFont:
                         return self.glyphOrder
                 except AttributeError:
                         pass
-                if self.has_key('CFF '):
+                if 'CFF ' in self:
                         cff = self['CFF ']
                         if cff.haveGlyphNames():
                                 self.glyphOrder = cff.getGlyphOrder()
                         else:
                                 # CID-keyed font, use cmap
                                 self._getGlyphNamesFromCmap()
-                elif self.has_key('post'):
+                elif 'post' in self:
                         # TrueType font
                         glyphOrder = self['post'].getGlyphOrder()
                         if glyphOrder is None:
@@ -423,24 +423,24 @@ class TTFont:
                         cmap = tempcmap.cmap
                         # create a reverse cmap dict
                         reversecmap = {}
-                        for unicode, name in cmap.items():
-                                reversecmap[name] = unicode
+                        for str, name in list(cmap.items()):
+                                reversecmap[name] = str
                         allNames = {}
                         for i in range(numGlyphs):
                                 tempName = glyphOrder[i]
-                                if reversecmap.has_key(tempName):
-                                        unicode = reversecmap[tempName]
-                                        if agl.UV2AGL.has_key(unicode):
+                                if tempName in reversecmap:
+                                        str = reversecmap[tempName]
+                                        if str in agl.UV2AGL:
                                                 # get name from the Adobe Glyph List
-                                                glyphName = agl.UV2AGL[unicode]
+                                                glyphName = agl.UV2AGL[str]
                                         else:
                                                 # create uni<CODE> name
                                                 glyphName = "uni" + string.upper(string.zfill(
-                                                                hex(unicode)[2:], 4))
+                                                                hex(str)[2:], 4))
                                         tempName = glyphName
                                         n = 1
-                                        while allNames.has_key(tempName):
-                                                tempName = glyphName + "#" + `n`
+                                        while tempName in allNames:
+                                                tempName = glyphName + "#" + repr(n)
                                                 n = n + 1
                                         glyphOrder[i] = tempName
                                         allNames[tempName] = 1
@@ -481,14 +481,14 @@ class TTFont:
                         self._buildReverseGlyphOrderDict()
                 glyphOrder = self.getGlyphOrder()
                 d = self._reverseGlyphOrderDict
-                if not d.has_key(glyphName):
+                if glyphName not in d:
                         if glyphName in glyphOrder:
                                 self._buildReverseGlyphOrderDict()
                                 return self.getGlyphID(glyphName)
                         else:
-                                raise KeyError, glyphName
+                                raise KeyError(glyphName)
                 glyphID = d[glyphName]
-                if glyphName <> glyphOrder[glyphID]:
+                if glyphName != glyphOrder[glyphID]:
                         self._buildReverseGlyphOrderDict()
                         return self.getGlyphID(glyphName)
                 return glyphID
@@ -508,7 +508,7 @@ class TTFont:
                 tableClass = getTableClass(tag)
                 for masterTable in tableClass.dependencies:
                         if masterTable not in done:
-                                if self.has_key(masterTable):
+                                if masterTable in self:
                                         self._writeTable(masterTable, writer, done)
                                 else:
                                         done.append(masterTable)
@@ -525,12 +525,12 @@ class TTFont:
                         if self.verbose:
                                 debugmsg("compiling '%s' table" % tag)
                         return self.tables[tag].compile(self)
-                elif self.reader and self.reader.has_key(tag):
+                elif self.reader and tag in self.reader:
                         if self.verbose:
                                 debugmsg("Reading '%s' table from disk" % tag)
                         return self.reader[tag]
                 else:
-                        raise KeyError, tag
+                        raise KeyError(tag)
 
 
 class GlyphOrder:
@@ -552,7 +552,8 @@ class GlyphOrder:
                         writer.simpletag("GlyphID", id=i, name=glyphName)
                         writer.newline()
 
-        def fromXML(self, (name, attrs, content), ttFont):
+        def fromXML(self, xxx_todo_changeme, ttFont):
+                (name, attrs, content) = xxx_todo_changeme
                 if not hasattr(self, "glyphOrder"):
                         self.glyphOrder = []
                         ttFont.setGlyphOrder(self.glyphOrder)
@@ -582,7 +583,7 @@ def getTableModule(tag):
         """Fetch the packer/unpacker module for a table.
         Return None when no module is found.
         """
-        import tables
+        from . import tables
         pyTag = tagToIdentifier(tag)
         try:
                 module = __import__("kiva.fonttools.fontTools.ttLib.tables." + pyTag)
@@ -598,7 +599,7 @@ def getTableClass(tag):
         """
         module = getTableModule(tag)
         if module is None:
-                from tables.DefaultTable import DefaultTable
+                from .tables.DefaultTable import DefaultTable
                 return DefaultTable
         pyTag = tagToIdentifier(tag)
         tableClass = getattr(module, "table_" + pyTag)
@@ -700,5 +701,5 @@ def xmlToTag(tag):
 
 def debugmsg(msg):
         import time
-        print msg + time.strftime("  (%H:%M:%S)", time.localtime(time.time()))
+        print(msg + time.strftime("  (%H:%M:%S)", time.localtime(time.time())))
 

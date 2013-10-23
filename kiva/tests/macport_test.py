@@ -23,14 +23,14 @@ if sys.platform == 'darwin':
             self.memdc = wx.MemoryDC()
             self.bitmap = wx.EmptyBitmap(200,200)
             self.memdc.SelectObject(self.bitmap)
-            print "constructed frame"
+            print("constructed frame")
 
         def OnPaint(self, evt):
             dc = wx.PaintDC(self)
-            print "paintdc.this:", dc.this
-            print "paintdc.macport:", get_macport(dc)
-            print "memdc.this:", self.memdc.this
-            print "memdc.macport:", get_macport(self.memdc)
+            print("paintdc.this:", dc.this)
+            print("paintdc.macport:", get_macport(dc))
+            print("memdc.this:", self.memdc.this)
+            print("memdc.macport:", get_macport(self.memdc))
 
     class MyApp(wx.App):
         def OnInit(self):

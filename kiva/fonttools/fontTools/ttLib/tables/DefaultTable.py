@@ -26,11 +26,12 @@ class DefaultTable:
                 writer.endtag("hexdata")
                 writer.newline()
 
-        def fromXML(self, (name, attrs, content), ttFont):
+        def fromXML(self, xxx_todo_changeme, ttFont):
+                (name, attrs, content) = xxx_todo_changeme
                 from kiva.fonttools.fontTools.misc.textTools import readHex
                 from kiva.fonttools.fontTools import ttLib
-                if name <> "hexdata":
-                        raise ttLib.TTLibError, "can't handle '%s' element" % name
+                if name != "hexdata":
+                        raise ttLib.TTLibError("can't handle '%s' element" % name)
                 self.decompile(readHex(content), ttFont)
 
         def __repr__(self):

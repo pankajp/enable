@@ -21,14 +21,14 @@ from pyglet import gl
 from pygarrayimage.arrayimage import ArrayInterfaceImage
 
 # Local kiva imports
-from affine import affine_from_values, transform_points
-from agg import GraphicsContextGL as _GCL
-from agg import GraphicsContextArray
-from agg import AggFontType
-from agg import Image
-from agg import CompiledPath
-from constants import BOLD, BOLD_ITALIC, ITALIC
-from fonttools import Font
+from .affine import affine_from_values, transform_points
+from .agg import GraphicsContextGL as _GCL
+from .agg import GraphicsContextArray
+from .agg import AggFontType
+from .agg import Image
+from .agg import CompiledPath
+from .constants import BOLD, BOLD_ITALIC, ITALIC
+from .fonttools import Font
 
 
 class ArrayImage(ArrayInterfaceImage):

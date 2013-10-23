@@ -28,13 +28,13 @@
         to access its values. Currently, I do the latter.
 """
 
-import affine
+from . import affine
 import copy
 from numpy import alltrue, array, asarray, float64, sometrue, shape,\
      pi, concatenate
 import numpy as np
 
-from constants import *
+from .constants import *
 
 def exactly_equal(arr1,arr2):
     return shape(arr1)==shape(arr2) and alltrue(arr1==arr2)
@@ -467,7 +467,7 @@ class GraphicsContextBase(object):
         """
         if style not in (JOIN_ROUND,JOIN_BEVEL,JOIN_MITER):
             msg = "Invalid line join style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
         self.state.line_join = style
 
     def set_miter_limit(self,limit):
@@ -500,7 +500,7 @@ class GraphicsContextBase(object):
         """
         if style not in (CAP_ROUND,CAP_BUTT,CAP_SQUARE):
             msg = "Invalid line cap style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
         self.state.line_cap = style
 
     def set_line_dash(self,pattern,phase=0):
@@ -521,10 +521,10 @@ class GraphicsContextBase(object):
             return
         pattern = asarray(pattern)
         if len(pattern) < 2:
-            raise ValueError, "dash pattern should have at least two entries."
+            raise ValueError("dash pattern should have at least two entries.")
         # not sure if this check is really needed.
         if phase < 0:
-            raise ValueError, "dash phase should be a positive value."
+            raise ValueError("dash phase should be a positive value.")
         self.state.line_dash = (phase,pattern)
 
     def set_flatness(self,flatness):
@@ -609,7 +609,7 @@ class GraphicsContextBase(object):
             #tf = take(array(self.active_subpath,object),
             #          self.path_transform_indices)
             tf = array(self.active_subpath, object)[self.path_transform_indices, :]
-            self.path_transform_indices = range(len(tf))
+            self.path_transform_indices = list(range(len(tf)))
             self.active_subpath = list(tf)
         else:
             self.active_subpath = []
@@ -677,7 +677,7 @@ class GraphicsContextBase(object):
             The current point is moved to the last point in 'ends'.
         """
         self._new_subpath()
-        for i in xrange(min(len(starts), len(ends))):
+        for i in range(min(len(starts), len(ends))):
             self.active_subpath.append( (POINT, starts[i]) )
             self.active_subpath.append( (LINE, ends[i]) )
         self.state.current_point = ends[i]
@@ -814,7 +814,7 @@ class GraphicsContextBase(object):
     def arc_to(self, x1, y1, x2, y2, radius):
         """
         """
-        raise NotImplementedError, "arc_to is not implemented"
+        raise NotImplementedError("arc_to is not implemented")
 
     def _new_subpath(self):
         """ Starts a new drawing subpath.
@@ -1172,7 +1172,7 @@ class GraphicsContextBase(object):
                         TEXT_INVISIBLE, TEXT_FILL_CLIP, TEXT_STROKE_CLIP,
                         TEXT_FILL_STROKE_CLIP, TEXT_CLIP, TEXT_OUTLINE):
             msg = "Invalid text drawing mode.  See documentation for valid modes"
-            raise ValueError, msg
+            raise ValueError(msg)
         self.state.text_drawing_mode = mode
 
     def set_text_position(self,x,y):
@@ -1372,7 +1372,7 @@ class GraphicsContextBase(object):
                               CONCAT_CTM,LOAD_CTM]:
                     self.device_transform_device_ctm(func,args)
                 else:
-                    print 'oops:', func
+                    print('oops:', func)
             # finally, draw any remaining paths.
             self.draw_subpath(mode)
 

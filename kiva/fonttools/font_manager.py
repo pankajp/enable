@@ -53,13 +53,13 @@ try:
     set
 except NameError:
     from sets import Set as set
-import afm
+from . import afm
 
 from traits.etsconfig.api import ETSConfig
 from kiva.fonttools.fontTools.ttLib import TTFont
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -173,7 +173,7 @@ def _is_writable_dir(p):
     p is a string pointing to a putative writable dir -- return True p
     is such a string, else False
     """
-    if not isinstance(p, basestring):
+    if not isinstance(p, str):
         return False
 
     try:
@@ -194,7 +194,7 @@ def get_configdir():
     p = os.path.join(ETSConfig.application_data, 'kiva')
     try:
         os.makedirs(p)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise
     if not _is_writable_dir(p):
@@ -205,7 +205,7 @@ def is_string_like(obj):
     'Return True if *obj* looks like a string'
     from numpy import ma
 
-    if isinstance(obj, (str, unicode)):
+    if isinstance(obj, str):
         return True
     # numpy strings are subclass of str, ma strings are not
     if ma.isMaskedArray(obj):
@@ -247,19 +247,19 @@ def win32FontDirectory():
     If the key is not found, $WINDIR/Fonts will be returned.
     """
     try:
-        import _winreg
+        import winreg
     except ImportError:
         pass # Fall through to default
     else:
         try:
-            user = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, MSFolders)
+            user = winreg.OpenKey(winreg.HKEY_CURRENT_USER, MSFolders)
             try:
                 try:
-                    return _winreg.QueryValueEx(user, 'Fonts')[0]
+                    return winreg.QueryValueEx(user, 'Fonts')[0]
                 except OSError:
                     pass # Fall through to default
             finally:
-                _winreg.CloseKey(user)
+                winreg.CloseKey(user)
         except OSError:
             pass # Fall through to default
     return os.path.join(os.environ['WINDIR'], 'Fonts')
@@ -272,7 +272,7 @@ def win32InstalledFonts(directory=None, fontext='ttf'):
     'afm'.
     """
 
-    import _winreg
+    import winreg
     if directory is None:
         directory = win32FontDirectory()
 
@@ -281,7 +281,7 @@ def win32InstalledFonts(directory=None, fontext='ttf'):
     key, items = None, {}
     for fontdir in MSFontDirectories:
         try:
-            local = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, fontdir)
+            local = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, fontdir)
         except OSError:
             continue
 
@@ -291,9 +291,9 @@ def win32InstalledFonts(directory=None, fontext='ttf'):
                 files.extend(glob.glob(os.path.join(directory, '*.'+ext)))
             return files
         try:
-            for j in range(_winreg.QueryInfoKey(local)[1]):
+            for j in range(winreg.QueryInfoKey(local)[1]):
                 try:
-                    key, direc, any = _winreg.EnumValue( local, j)
+                    key, direc, any = winreg.EnumValue( local, j)
                     if not os.path.dirname(direc):
                         direc = os.path.join(directory, direc)
                     direc = os.path.abspath(direc).lower()
@@ -304,9 +304,9 @@ def win32InstalledFonts(directory=None, fontext='ttf'):
                 except WindowsError:
                     continue
 
-            return items.keys()
+            return list(items.keys())
         finally:
-            _winreg.CloseKey(local)
+            winreg.CloseKey(local)
     return None
 
 def OSXFontDirectory():
@@ -425,7 +425,7 @@ def findSystemFonts(fontpaths=None, fontext='ttf'):
             for f in get_fontconfig_fonts(fontext):
                 fontfiles[f] = 1
 
-    elif isinstance(fontpaths, (str, unicode)):
+    elif isinstance(fontpaths, str):
         fontpaths = [fontpaths]
 
     for path in fontpaths:
@@ -442,7 +442,7 @@ def findSystemFonts(fontpaths=None, fontext='ttf'):
             else:
                 fontfiles[abs_path] = 1
 
-    return [fname for fname in fontfiles.keys() if os.path.exists(fname)]
+    return [fname for fname in list(fontfiles.keys()) if os.path.exists(fname)]
 
 def weight_as_number(weight):
     """
@@ -457,7 +457,7 @@ def weight_as_number(weight):
     elif weight in range(100, 1000, 100):
         pass
     else:
-        raise ValueError, 'weight not a valid integer'
+        raise ValueError('weight not a valid integer')
     return weight
 
 
@@ -543,7 +543,7 @@ def ttfFontProperty(fpath, font):
     #    lighter and bolder are also allowed.
 
     weight = None
-    for w in weight_dict.keys():
+    for w in list(weight_dict.keys()):
         if sfnt4.find(w) >= 0:
             weight = w
             break
@@ -977,12 +977,12 @@ def ttfdict_to_fnames(d):
     flatten a ttfdict to all the filenames it contains
     """
     fnames = []
-    for named in d.values():
-        for styled in named.values():
-            for variantd in styled.values():
-                for weightd in variantd.values():
-                    for stretchd in weightd.values():
-                        for fname in stretchd.values():
+    for named in list(d.values()):
+        for styled in list(named.values()):
+            for variantd in list(styled.values()):
+                for weightd in list(variantd.values()):
+                    for stretchd in list(weightd.values()):
+                        for fname in list(stretchd.values()):
                             fnames.append(fname)
     return fnames
 

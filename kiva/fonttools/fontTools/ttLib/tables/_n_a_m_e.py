@@ -1,4 +1,4 @@
-import DefaultTable
+from . import DefaultTable
 import struct
 from kiva.fonttools import sstruct
 from kiva.fonttools.fontTools.misc.textTools import safeEval
@@ -49,7 +49,7 @@ class table__n_a_m_e(DefaultTable.DefaultTable):
                 lastoffset = 0
                 done = {}  # remember the data so we can reuse the "pointers"
                 for name in self.names:
-                        if done.has_key(name.string):
+                        if name.string in done:
                                 name.offset, name.length = done[name.string]
                         else:
                                 name.offset, name.length = done[name.string] = len(stringData), len(name.string)
@@ -61,8 +61,9 @@ class table__n_a_m_e(DefaultTable.DefaultTable):
                 for name in self.names:
                         name.toXML(writer, ttFont)
 
-        def fromXML(self, (name, attrs, content), ttFont):
-                if name <> "namerecord":
+        def fromXML(self, xxx_todo_changeme, ttFont):
+                (name, attrs, content) = xxx_todo_changeme
+                if name != "namerecord":
                         return # ignore unknown tags
                 if not hasattr(self, "names"):
                         self.names = []
@@ -106,7 +107,8 @@ class NameRecord:
                 writer.endtag("namerecord")
                 writer.newline()
 
-        def fromXML(self, (name, attrs, content), ttFont):
+        def fromXML(self, xxx_todo_changeme1, ttFont):
+                (name, attrs, content) = xxx_todo_changeme1
                 self.nameID = safeEval(attrs["nameID"])
                 self.platformID = safeEval(attrs["platformID"])
                 self.platEncID = safeEval(attrs["platEncID"])
@@ -115,12 +117,12 @@ class NameRecord:
                         s = ""
                         for element in content:
                                 s = s + element
-                        s = unicode(s, "utf8")
+                        s = str(s, "utf8")
                         s = s.strip()
                         self.string = s.encode("utf_16_be")
                 else:
                         s = string.strip(string.join(content, ""))
-                        self.string = unicode(s, "utf8").encode("latin1")
+                        self.string = str(s, "utf8").encode("latin1")
 
         def __cmp__(self, other):
                 """Compare method, so a list of NameRecords can be sorted
@@ -148,6 +150,6 @@ class NameRecord:
                 """
                 for attr in dir(self):
                         val = getattr(self, attr)
-                        if type(val) == types.LongType:
+                        if type(val) == int:
                                 setattr(self, attr, int(val))
 

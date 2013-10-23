@@ -20,13 +20,13 @@ class  Formatter:
         self.processor   = processor
         self.identifiers = {}
         self.chapters    = processor.chapters
-        self.sections    = processor.sections.values()
+        self.sections    = list(processor.sections.values())
         self.block_index = []
 
         # store all blocks in a dictionary
         self.blocks = []
         for section in self.sections:
-            for block in section.blocks.values():
+            for block in list(section.blocks.values()):
                 self.add_identifier( block.name, block )
 
                 # add enumeration values to the index, since this is useful
@@ -35,11 +35,11 @@ class  Formatter:
                         for field in markup.fields:
                             self.add_identifier( field.name, block )
 
-        self.block_index = self.identifiers.keys()
+        self.block_index = list(self.identifiers.keys())
         self.block_index.sort( index_sort )
 
     def  add_identifier( self, name, block ):
-        if self.identifiers.has_key( name ):
+        if name in self.identifiers:
             # duplicate name!
             sys.stderr.write(                                           \
                "WARNING: duplicate definition for '" + name + "' in " + \

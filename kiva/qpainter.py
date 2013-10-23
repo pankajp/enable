@@ -15,7 +15,7 @@
 __all__ = ["CompiledPath", "Font", "font_metrics_provider", "GraphicsContext"]
 
 from functools import partial
-from itertools import izip
+
 import numpy as np
 import warnings
 
@@ -23,9 +23,9 @@ import warnings
 from pyface.qt import QtCore, QtGui
 
 # Local imports.
-from arc_conversion import arc_to_tangent_points
-from fonttools import Font
-import constants
+from .arc_conversion import arc_to_tangent_points
+from .fonttools import Font
+from . import constants
 
 cap_style = {}
 cap_style[constants.CAP_ROUND]  = QtCore.Qt.RoundCap
@@ -208,7 +208,7 @@ class GraphicsContext(object):
             sjoin = join_style[style]
         except KeyError:
             msg = "Invalid line join style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
 
         pen = self.gc.pen()
         pen.setJoinStyle(sjoin)
@@ -239,7 +239,7 @@ class GraphicsContext(object):
             scap = cap_style[style]
         except KeyError:
             msg = "Invalid line cap style.  See documentation for valid styles"
-            raise ValueError, msg
+            raise ValueError(msg)
 
         pen = self.gc.pen()
         pen.setCapStyle(scap)
@@ -340,7 +340,7 @@ class GraphicsContext(object):
     def line_set(self, starts, ends):
         """ Draw multiple disjoint line segments.
         """
-        for start, end in izip(starts, ends):
+        for start, end in zip(starts, ends):
             self.path.path.moveTo(start[0], start[1])
             self.path.path.lineTo(end[0], end[1])
 
@@ -462,19 +462,19 @@ class GraphicsContext(object):
         """
         """
         msg = "set_fill_color_space not implemented on Qt yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def set_stroke_color_space(self):
         """
         """
         msg = "set_stroke_color_space not implemented on Qt yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def set_rendering_intent(self):
         """
         """
         msg = "set_rendering_intent not implemented on Qt yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     #----------------------------------------------------------------
     # Color manipulation
@@ -694,7 +694,7 @@ class GraphicsContext(object):
         """
         """
         msg = "show_glyphs not implemented on Qt yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def get_text_extent(self, text):
         """ Returns the bounding rect of the rendered text
@@ -759,7 +759,7 @@ class GraphicsContext(object):
         """
         """
         msg = "fill_rects not implemented on Qt yet."
-        raise NotImplementedError, msg
+        raise NotImplementedError(msg)
 
     def clear_rect(self, rect):
         """
@@ -830,7 +830,7 @@ class GraphicsContext(object):
             self.qt_dc.save(filename, format=file_format)
         else:
             msg = "save not implemented for window contexts."
-            raise NotImplementedError, msg
+            raise NotImplementedError(msg)
 
 
 class CompiledPath(object):

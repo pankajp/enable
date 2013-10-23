@@ -28,13 +28,13 @@ class SFNTReader:
                 self.file = file
                 self.checkChecksums = checkChecksums
                 data = self.file.read(sfntDirectorySize)
-                if len(data) <> sfntDirectorySize:
+                if len(data) != sfntDirectorySize:
                         from kiva.fonttools.fontTools import ttLib
-                        raise ttLib.TTLibError, "Not a TrueType or OpenType font (not enough data)"
+                        raise ttLib.TTLibError("Not a TrueType or OpenType font (not enough data)")
                 sstruct.unpack(sfntDirectoryFormat, data, self)
                 if self.sfntVersion not in ("\000\001\000\000", "OTTO", "true"):
                         from kiva.fonttools.fontTools import ttLib
-                        raise ttLib.TTLibError, "Not a TrueType or OpenType font (bad sfntVersion)"
+                        raise ttLib.TTLibError("Not a TrueType or OpenType font (bad sfntVersion)")
                 self.tables = {}
                 for i in range(self.numTables):
                         entry = SFNTDirectoryEntry()
@@ -49,10 +49,10 @@ class SFNTReader:
                                 pass
 
         def has_key(self, tag):
-                return self.tables.has_key(tag)
+                return tag in self.tables
 
         def keys(self):
-                return self.tables.keys()
+                return list(self.tables.keys())
 
         def __getitem__(self, tag):
                 """Fetch the raw table data."""
@@ -68,9 +68,9 @@ class SFNTReader:
                         if self.checkChecksums > 1:
                                 # Be obnoxious, and barf when it's wrong
                                 assert checksum == entry.checksum, "bad checksum for '%s' table" % tag
-                        elif checksum <> entry.checkSum:
+                        elif checksum != entry.checkSum:
                                 # Be friendly, and just print a warning.
-                                print "bad checksum for '%s' table" % tag
+                                print("bad checksum for '%s' table" % tag)
                 return data
 
         def __delitem__(self, tag):
@@ -96,13 +96,13 @@ class SFNTWriter:
 
         def __setitem__(self, tag, data):
                 """Write raw table data to disk."""
-                if self.tables.has_key(tag):
+                if tag in self.tables:
                         # We've written this table to file before. If the length
                         # of the data is still the same, we allow overwriting it.
                         entry = self.tables[tag]
-                        if len(data) <> entry.length:
+                        if len(data) != entry.length:
                                 from kiva.fonttools.fontTools import ttLib
-                                raise ttLib.TTLibError, "cannot rewrite '%s' table: length does not match directory entry" % tag
+                                raise ttLib.TTLibError("cannot rewrite '%s' table: length does not match directory entry" % tag)
                 else:
                         entry = SFNTDirectoryEntry()
                         entry.tag = tag
@@ -125,11 +125,11 @@ class SFNTWriter:
                 """All tables must have been written to disk. Now write the
                 directory.
                 """
-                tables = self.tables.items()
+                tables = list(self.tables.items())
                 tables.sort()
-                if len(tables) <> self.numTables:
+                if len(tables) != self.numTables:
                         from kiva.fonttools.fontTools import ttLib
-                        raise ttLib.TTLibError, "wrong number of tables; expected %d, found %d" % (self.numTables, len(tables))
+                        raise ttLib.TTLibError("wrong number of tables; expected %d, found %d" % (self.numTables, len(tables)))
 
                 directory = sstruct.pack(sfntDirectoryFormat, self)
 
@@ -144,7 +144,7 @@ class SFNTWriter:
 
         def calcMasterChecksum(self, directory):
                 # calculate checkSumAdjustment
-                tags = self.tables.keys()
+                tags = list(self.tables.keys())
                 checksums = numpy.zeros(len(tags)+1)
                 for i in range(len(tags)):
                         checksums[i] = self.tables[tags[i]].checkSum
@@ -217,7 +217,7 @@ def calcChecksum(data, start=0):
         if remainder:
                 data = data + '\0' * (4-remainder)
         a = numpy.fromstring(struct.pack(">l", start) + data, numpy.int32)
-        if ttLib.endian <> "big":
+        if ttLib.endian != "big":
                 a = a.byteswapped()
         return numpy.add.reduce(a)
 
